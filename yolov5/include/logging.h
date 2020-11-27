@@ -17,14 +17,14 @@
 #ifndef TENSORRT_LOGGING_H
 #define TENSORRT_LOGGING_H
 
-#include "NvInferRuntimeCommon.h"
-#include <cassert>
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <ostream>
-#include <sstream>
-#include <string>
+#include "/home/supermc/envs/TensorRT/TensorRT-7.1.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.0/TensorRT-7.1.3.4/include/NvInferRuntimeCommon.h"
+#include "/usr/include/c++/7/cassert"
+#include "/usr/include/c++/7/ctime"
+#include "/usr/include/c++/7/iomanip"
+#include "/usr/include/c++/7/iostream"
+#include "/usr/include/c++/7/ostream"
+#include "/usr/include/c++/7/sstream"
+#include "/usr/include/c++/7/string"
 
 using Severity = nvinfer1::ILogger::Severity;
 

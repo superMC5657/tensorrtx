@@ -1,6 +1,8 @@
 """
 An example that uses TensorRT's Python api to make inferences.
 """
+import sys
+
 import ctypes
 import os
 import random
@@ -15,11 +17,12 @@ import pycuda.driver as cuda
 import tensorrt as trt
 import torch
 import torchvision
+from tqdm import tqdm
 
-INPUT_W = 608
-INPUT_H = 608
-CONF_THRESH = 0.1
-IOU_THRESHOLD = 0.4
+INPUT_W = 640
+INPUT_H = 640
+CONF_THRESH = 0.4
+IOU_THRESHOLD = 0.5
 
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
@@ -37,7 +40,7 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
 
     """
     tl = (
-        line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1
+            line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1
     )  # line/font thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
@@ -154,7 +157,9 @@ class YoLov5TRT(object):
                 ),
             )
         parent, filename = os.path.split(input_image_path)
-        save_name = os.path.join(parent, "output_" + filename)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        save_name = os.path.join(output_dir, filename)
         # 　Save image
         cv2.imwrite(save_name, image_raw)
 
@@ -291,31 +296,41 @@ if __name__ == "__main__":
     # load custom plugins
     PLUGIN_LIBRARY = "build/libmyplugins.so"
     ctypes.CDLL(PLUGIN_LIBRARY)
-    engine_file_path = "build/yolov5s.engine"
+    engine_file_path = "build/yolov5m.engine"
+    input_dir = "data/test"
+    output_dir = "data/output"
 
     # load coco labels
 
-    categories = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
-            "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
-            "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-            "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-            "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-            "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-            "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
-            "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear",
-            "hair drier", "toothbrush"]
+    categories = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
+                  "traffic light",
+                  "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
+                  "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase",
+                  "frisbee",
+                  "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
+                  "surfboard",
+                  "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
+                  "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
+                  "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
+                  "cell phone",
+                  "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+                  "teddy bear",
+                  "hair drier", "toothbrush"]
 
     # a  YoLov5TRT instance
     yolov5_wrapper = YoLov5TRT(engine_file_path)
 
     # from https://github.com/ultralytics/yolov5/tree/master/inference/images
-    input_image_paths = ["zidane.jpg", "bus.jpg"]
-
-    for input_image_path in input_image_paths:
+    input_image_paths = [os.path.join(input_dir, _) for _ in os.listdir(input_dir)]
+    start = time.time()
+    for input_image_path in tqdm(input_image_paths):
         # create a new thread to do inference
-        thread1 = myThread(yolov5_wrapper.infer, [input_image_path])
-        thread1.start()
-        thread1.join()
+        # thread1 = myThread(yolov5_wrapper.infer, [input_image_path])
+        # thread1.start()
+        # thread1.join()
 
+        yolov5_wrapper.infer(input_image_path)
+
+    print(time.time() - start)
     # destroy the instance
     yolov5_wrapper.destroy()

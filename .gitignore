@@ -2,3 +2,7 @@
 */*/build
 */*.wts
 */*.ppm
+*.idea
+*cmake-build-debug
+*data
+*wts
