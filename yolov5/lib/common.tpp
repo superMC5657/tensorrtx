@@ -3,7 +3,7 @@
 //
 #include "common.hpp"
 
-cv::Mat preprocess_img(cv::Mat &img) {
+cv::Mat preprocess_img(cv::Mat &img)  {
     int w, h, x, y;
     float r_w = Yolo::INPUT_W / (img.cols * 1.0);
     float r_h = Yolo::INPUT_H / (img.rows * 1.0);
@@ -318,7 +318,7 @@ addYoLoLayer(INetworkDefinition *network, std::map<std::string, Weights> &weight
     std::vector<float> anchors_yolo = getAnchors(weightMap);
     PluginField pluginMultidata[4];
     int NetData[4];
-    NetData[0] = Yolo::CLASS_NUM;
+    NetData[0] = CLASS_NUM;
     NetData[1] = Yolo::INPUT_W;
     NetData[2] = Yolo::INPUT_H;
     NetData[3] = Yolo::MAX_OUTPUT_BBOX_COUNT;

@@ -14,11 +14,11 @@
 
 #define USE_FP16  // comment out this if want to use FP32
 #define DEVICE 0  // GPU id
-#define NMS_THRESH 0.4
-#define CONF_THRESH 0.5
+#define NMS_THRESH 0.5
+#define CONF_THRESH 0.4
 #define BATCH_SIZE 1
 
-#define NET bdd  // s m l x
+#define NET t  // s m l x
 #define NETSTRUCT(str) createEngine_##str
 #define CREATENET(net) NETSTRUCT(net)
 #define STR1(x) #x
@@ -41,10 +41,12 @@ ICudaEngine *createEngine_l(unsigned int maxBatchSize, IBuilder *builder, IBuild
 
 ICudaEngine *createEngine_x(unsigned int maxBatchSize, IBuilder *builder, IBuilderConfig *config, DataType dt);
 
-ICudaEngine *createEngine_m_9(unsigned int maxBatchSize, IBuilder *builder, IBuilderConfig *config, DataType dt);
+ICudaEngine *createEngine_t(unsigned int maxBatchSize, IBuilder *builder, IBuilderConfig *config, DataType dt);
+
 #include "createEngine_s.tpp"
 #include "createEngine_m.tpp"
 #include "createEngine_l.tpp"
 #include "createEngine_x.tpp"
-#include "createEngine_m_9.tpp"
+#include "createEngine_t.tpp"
+
 #endif //YOLOV5_CREATEENGINE_H

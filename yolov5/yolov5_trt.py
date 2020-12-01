@@ -1,12 +1,12 @@
 """
 An example that uses TensorRT's Python api to make inferences.
 """
-import sys
+
 
 import ctypes
 import os
 import random
-import sys
+
 import threading
 import time
 
@@ -19,6 +19,8 @@ import torch
 import torchvision
 from tqdm import tqdm
 
+
+
 INPUT_W = 640
 INPUT_H = 640
 CONF_THRESH = 0.4
@@ -29,7 +31,7 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     """
     description: Plots one bounding box on image img,
                  this function comes from YoLov5 project.
-    param: 
+    param:
         x:      a box likes [x1,y1,x2,y2]
         img:    a opencv image object
         color:  color to draw rectangle, such as (0,255,0)
@@ -42,7 +44,6 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     tl = (
             line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1
     )  # line/font thickness
-    color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
     if label:
@@ -112,7 +113,7 @@ class YoLov5TRT(object):
         self.bindings = bindings
 
     def infer(self, input_image_path):
-        threading.Thread.__init__(self)
+        # threading.Thread.__init__(self)
         # Make self the active context, pushing it on top of the context stack.
         self.cfx.push()
         # Restore
@@ -152,13 +153,12 @@ class YoLov5TRT(object):
             plot_one_box(
                 box,
                 image_raw,
+                color=colors[int(result_classid[i])],
                 label="{}:{:.2f}".format(
                     categories[int(result_classid[i])], result_scores[i]
                 ),
             )
         parent, filename = os.path.split(input_image_path)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
         save_name = os.path.join(output_dir, filename)
         # 　Save image
         cv2.imwrite(save_name, image_raw)
@@ -247,7 +247,7 @@ class YoLov5TRT(object):
         """
         description: postprocess the prediction
         param:
-            output:     A tensor likes [num_boxes,cx,cy,w,h,conf,cls_id, cx,cy,w,h,conf,cls_id, ...] 
+            output:     A tensor likes [num_boxes,cx,cy,w,h,conf,cls_id, cx,cy,w,h,conf,cls_id, ...]
             origin_h:   height of original image
             origin_w:   width of original image
         return:
@@ -296,27 +296,35 @@ if __name__ == "__main__":
     # load custom plugins
     PLUGIN_LIBRARY = "build/libmyplugins.so"
     ctypes.CDLL(PLUGIN_LIBRARY)
-    engine_file_path = "build/yolov5m.engine"
-    input_dir = "data/test"
-    output_dir = "data/output"
-
+    engine_file_path = "build/yolov5t.engine"
+    input_dir = "inference/minival"
+    output_dir = "inference/output"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     # load coco labels
 
-    categories = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
-                  "traffic light",
-                  "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
-                  "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase",
-                  "frisbee",
-                  "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-                  "surfboard",
-                  "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-                  "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-                  "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
-                  "cell phone",
-                  "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
-                  "teddy bear",
-                  "hair drier", "toothbrush"]
-
+    # categories = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
+    #               "traffic light",
+    #               "fire hydrant", "stop sign", "parki ng meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
+    #               "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase",
+    #               "frisbee",
+    #               "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
+    #               "surfboard",
+    #               "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
+    #               "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
+    #               "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
+    #               "cell phone",
+    #               "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+    #               "teddy bear",
+    #               "hair drier", "toothbrush"]
+    categories = [
+        'vehicle',
+        'bicycle',
+        'person',
+        'sign',
+        'light',
+    ]
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in categories]
     # a  YoLov5TRT instance
     yolov5_wrapper = YoLov5TRT(engine_file_path)
 

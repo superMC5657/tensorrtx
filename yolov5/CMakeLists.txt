@@ -36,10 +36,10 @@ cuda_add_library(myplugins SHARED src/yololayer.cu)
 target_link_libraries(myplugins nvinfer cudart)
 
 find_package(OpenCV)
-include_directories(OpenCV_INCLUDE_DIRS)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 
-set(Exe yolov5bdd)
+set(Exe yolov5t)
 add_executable(${Exe} src/yolov5.cpp)
 target_link_libraries(${Exe} nvinfer)
 target_link_libraries(${Exe} cudart)

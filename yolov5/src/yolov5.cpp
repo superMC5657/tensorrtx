@@ -110,13 +110,24 @@ int main(int argc, char **argv) {
     mkdir(outputDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRWXG | S_IRWXO);   // 返回 0 表示创建成功，-1 表示失败
     auto _start = std::chrono::system_clock::now();
     int fcount = 0;
+
     for (int f = 0; f < (int) file_names.size(); f++) {
+
         fcount++;
         if (fcount < BATCH_SIZE && f + 1 != (int) file_names.size()) continue;
         for (int b = 0; b < fcount; b++) {
+            auto start = std::chrono::system_clock::now();
             cv::Mat img = cv::imread(std::string(argv[2]) + "/" + file_names[f - fcount + 1 + b]);
             if (img.empty()) continue;
+            auto end = std::chrono::system_clock::now();
+            std::cout << "cv_read:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                      << "ms" << std::endl;
+            start = std::chrono::system_clock::now();
             cv::Mat pr_img = preprocess_img(img); // letterbox BGR to RGB
+            end = std::chrono::system_clock::now();
+            std::cout << "preprocess_img:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                      << "ms" << std::endl;
+            start = std::chrono::system_clock::now();
             int i = 0;
             for (int row = 0; row < INPUT_H; ++row) {
                 uchar *uc_pixel = pr_img.data + row * pr_img.step;
@@ -128,18 +139,28 @@ int main(int argc, char **argv) {
                     ++i;
                 }
             }
+            end = std::chrono::system_clock::now();
+            std::cout << "to_cuda:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                      << "ms" << std::endl;
         }
+
 
         // Run inference
         auto start = std::chrono::system_clock::now();
         doInference(*context, stream, buffers, data, prob, BATCH_SIZE);
         auto end = std::chrono::system_clock::now();
-        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << "inference:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+                  << std::endl;
+        start = std::chrono::system_clock::now();
         std::vector<std::vector<Yolo::Detection>> batch_res(fcount);
         for (int b = 0; b < fcount; b++) {
             auto &res = batch_res[b];
             nms(res, &prob[b * OUTPUT_SIZE], CONF_THRESH, NMS_THRESH);
         }
+        end = std::chrono::system_clock::now();
+        std::cout << "nms:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+                  << std::endl;
+        start = std::chrono::system_clock::now();
         for (int b = 0; b < fcount; b++) {
             auto &res = batch_res[b];
             //std::cout << res.size() << std::endl;
@@ -153,6 +174,9 @@ int main(int argc, char **argv) {
             cv::imwrite(outputDir + "/_" + file_names[f - fcount + 1 + b], img);
         }
         fcount = 0;
+        end = std::chrono::system_clock::now();
+        std::cout << "cv_write:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+                  << std::endl;
     }
     auto _end = std::chrono::system_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count() << "ms" << std::endl;

@@ -1,13 +1,13 @@
 #ifndef YOLOV5_COMMON_H_
 #define YOLOV5_COMMON_H_
 
-#include "/usr/include/c++/7/fstream"
-#include "/usr/include/c++/7/map"
-#include "/usr/include/c++/7/sstream"
-#include "/usr/include/c++/7/vector"
-#include "/usr/local/include/opencv2/opencv.hpp"
-#include "/usr/include/dirent.h"
-#include "/home/supermc/envs/TensorRT/TensorRT-7.1.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.0/TensorRT-7.1.3.4/include/NvInfer.h"
+#include "c++/7/fstream"
+#include "c++/7/map"
+#include "c++/7/sstream"
+#include "c++/7/vector"
+#include "opencv2/opencv.hpp"
+#include "dirent.h"
+#include "NvInfer.h"
 #include "yololayer.h"
 
 #define CHECK(status) \

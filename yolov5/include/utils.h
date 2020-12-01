@@ -1,10 +1,10 @@
 #ifndef __TRT_UTILS_H_
 #define __TRT_UTILS_H_
 
-#include "/usr/include/c++/7/iostream"
-#include "/usr/include/c++/7/vector"
-#include "/usr/include/c++/7/algorithm"
-#include "/usr/local/cuda/include/cudnn.h"
+#include "c++/7/iostream"
+#include "c++/7/vector"
+#include "c++/7/algorithm"
+#include "cudnn.h"
 
 #ifndef CUDA_CHECK
 
